@@ -25,32 +25,27 @@ var isStopped = false
 // Start sets up lwIP stack, starts a V2Ray instance and registers the instance as the
 // connection handler for tun2socks.
 func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
-	// Assets
+	// Change V2ray asset path to the current path
+	// to access geosite.dat & geoipdat
 	path, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 	os.Setenv("v2ray.location.asset", path)
 
-	// SetNonblock puts the fd in blocking or non-blocking mode.
-	/*err = syscall.SetNonblock(fd, false)
-	if err != nil {
-		return
-	}*/
-
 	// Share the buffer pool.
 	core.SetBufferPool(vbytespool.GetPool(core.BufSize))
 
+	// Read config file
 	configBytes, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
-		//log.Fatalf("invalid vconfig file")
-		fmt.Println(err)
+		log.Fatalf("read config file failed: %v", err)
 	}
 
 	// Start the V2Ray instance.
 	v, err = vcore.StartInstance("json", configBytes)
 	if err != nil {
-		log.Fatal("start V instance failed: %v", err)
+		log.Fatalf("start V instance failed: %v", err)
 	}
 
 	// Configure sniffing settings for traffic coming from tun2socks.
@@ -68,18 +63,16 @@ func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
 	if len(validSniffings) == 0 {
 		sniffingConfig.Enabled = false
 	}
-
 	ctx := vproxyman.ContextWithSniffingConfig(context.Background(), sniffingConfig)
 
+	// MakeTunFile returns an os.File object from a TUN file descriptor `fd`.
 	tun := os.NewFile(uintptr(fd), "")
-
 	// Write IP packets back to TUN.
 	core.RegisterOutputFn(func(data []byte) (int, error) {
 		return tun.Write(data)
 	})
 
 	// Register tun2socks connection handlers.
-
 	TCPConnHandler := v2ray.NewTCPHandler(ctx, v)
 	var UDPConnHandler core.UDPConnHandler
 	if IsUDPEnabled {
@@ -98,6 +91,8 @@ func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
 		lwipStack = core.NewLWIPStack()
 	}
 
+	// ProcessInputPackets reads packets from a TUN device `tun` and writes them to `lwipStack`
+	// It's the main loop
 	buffer := make([]byte, MTU)
 	for !isStopped {
 		len, err := tun.Read(buffer)
@@ -115,8 +110,8 @@ func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
 	}
 }
 
-// StopV2Ray ...
-func StopV2Ray() {
+// Stop V2Ray, close lwipStack
+func Stop() {
 	isStopped = true
 	if lwipStack != nil {
 		err := lwipStack.Close()
@@ -132,20 +127,4 @@ func StopV2Ray() {
 		}
 		v = nil
 	}
-}
-
-func init() {
-	/*net.DefaultResolver = &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, addr string) (net.Conn, error) {
-			d, _ := vnet.ParseDestination(fmt.Sprintf("%v:%v", network, localDNS))
-			return vinternet.DialSystem(ctx, d, nil)
-		},
-	}
-	d := &net.Dialer{}
-	d.Control = func(network, address string, c syscall.RawConn) error {
-		return c.Control(func(fd uintptr) {
-			// Access socket fd
-		})
-	}*/
 }

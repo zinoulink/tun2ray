@@ -94,13 +94,23 @@ func main() {
 }
 
 func startV2Ray(configFile string, sniffingType string, exceptionApps string, exceptionSendThrough string) {
+
+	// Share the buffer pool.
 	core.SetBufferPool(vbytespool.GetPool(core.BufSize))
 
+	// Read config file
 	configBytes, err := ioutil.ReadFile(*args.Config)
 	if err != nil {
 		log.Fatalf("invalid vconfig file")
 	}
 
+	// Start the V2Ray instance.
+	v, err := vcore.StartInstance("json", configBytes)
+	if err != nil {
+		log.Fatalf("start V instance failed: %v", err)
+	}
+
+	// Configure sniffing settings for traffic coming from tun2socks.
 	var validSniffings []string
 	sniffings := strings.Split(sniffingType, ",")
 	for _, s := range sniffings {
@@ -108,12 +118,6 @@ func startV2Ray(configFile string, sniffingType string, exceptionApps string, ex
 			validSniffings = append(validSniffings, s)
 		}
 	}
-
-	v, err := vcore.StartInstance("json", configBytes)
-	if err != nil {
-		log.Fatalf("start V instance failed: %v", err)
-	}
-
 	sniffingConfig := &vproxyman.SniffingConfig{
 		Enabled:             true,
 		DestinationOverride: validSniffings,
@@ -121,21 +125,25 @@ func startV2Ray(configFile string, sniffingType string, exceptionApps string, ex
 	if len(validSniffings) == 0 {
 		sniffingConfig.Enabled = false
 	}
-
 	ctx := vproxyman.ContextWithSniffingConfig(context.Background(), sniffingConfig)
 
+	// Create v2ray handlers.
 	v2rayTCPConnHandler := v2ray.NewTCPHandler(ctx, v)
 	v2rayUDPConnHandler := v2ray.NewUDPHandler(ctx, v, *args.UDPTimeout)
 
+	// Resolve the gateway address.
 	sendThrough, err := net.ResolveTCPAddr("tcp", exceptionSendThrough)
 	if err != nil {
 		log.Fatalf("invalid exception send through address: %v", err)
 	}
+	// Prepare the apps list.
 	apps := strings.Split(exceptionApps, ",")
 
+	// Create d handlers
 	tcpHandler := d.NewTCPHandler(v2rayTCPConnHandler, apps, sendThrough)
 	udpHandler := d.NewUDPHandler(v2rayUDPConnHandler, apps, sendThrough, *args.UDPTimeout)
 
+	// Register tun2socks connection handlers.
 	core.RegisterTCPConnHandler(tcpHandler)
 	core.RegisterUDPConnHandler(udpHandler)
 }
