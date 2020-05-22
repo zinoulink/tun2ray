@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"syscall"
 	"time"
 
 	"fipn.xyz/tun2ray/dnsfallback"
@@ -42,10 +41,10 @@ func Start(fd int, vpnService VpnService, ConfigFile string, IsUDPEnabled bool, 
 	os.Setenv("v2ray.location.asset", path)
 
 	// SetNonblock puts the fd in blocking or non-blocking mode.
-	err = syscall.SetNonblock(fd, false)
+	/*err = syscall.SetNonblock(fd, false)
 	if err != nil {
 		return
-	}
+	}*/
 
 	// Protect file descriptors of net connections in the VPN process to prevent infinite loop.
 	// It works only with http, doesn't work with tls
@@ -96,6 +95,7 @@ func Start(fd int, vpnService VpnService, ConfigFile string, IsUDPEnabled bool, 
 	ctx := vproxyman.ContextWithSniffingConfig(context.Background(), sniffingConfig)
 
 	tun := os.NewFile(uintptr(fd), "")
+
 	// Write IP packets back to TUN.
 	core.RegisterOutputFn(func(data []byte) (int, error) {
 		return tun.Write(data)
