@@ -14,17 +14,9 @@ import (
 	vcore "v2ray.com/core"
 	vproxyman "v2ray.com/core/app/proxyman"
 	vbytespool "v2ray.com/core/common/bytespool"
-	vinternet "v2ray.com/core/transport/internet"
 
 	"github.com/eycorsican/go-tun2socks/core"
 )
-
-// VpnService should be implemented in Java/Kotlin.
-type VpnService interface {
-	// Protect is just a proxy to the VpnService.protect() method.
-	// See also: https://developer.android.com/reference/android/net/VpnService.html#protect(int)
-	Protect(fd int) bool
-}
 
 var lwipStack core.LWIPStack
 var v *vcore.Instance
@@ -32,7 +24,7 @@ var isStopped = false
 
 // Start sets up lwIP stack, starts a V2Ray instance and registers the instance as the
 // connection handler for tun2socks.
-func Start(fd int, vpnService VpnService, ConfigFile string, IsUDPEnabled bool, MTU int) {
+func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
 	// Assets
 	path, err := os.Getwd()
 	if err != nil {
@@ -45,21 +37,6 @@ func Start(fd int, vpnService VpnService, ConfigFile string, IsUDPEnabled bool, 
 	if err != nil {
 		return
 	}*/
-
-	// Protect file descriptors of net connections in the VPN process to prevent infinite loop.
-	// It works only with http, doesn't work with tls
-	protectFd := func(s VpnService, fd int) error {
-		if s.Protect(fd) {
-			return nil
-		} else {
-			return fmt.Errorf(fmt.Sprintf("failed to protect fd %v", fd))
-		}
-	}
-	netCtlr := func(network, address string, fd uintptr) error {
-		return protectFd(vpnService, int(fd))
-	}
-	vinternet.RegisterDialerController(netCtlr)
-	vinternet.RegisterListenerController(netCtlr)
 
 	// Share the buffer pool.
 	core.SetBufferPool(vbytespool.GetPool(core.BufSize))
