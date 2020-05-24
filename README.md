@@ -6,9 +6,12 @@ route add 0.0.0.0 mask 0.0.0.0 10.0.85.1 metric 1
 route delete 0.0.0.0 mask 0.0.0.0 10.0.85.1 
 
 # Build
-## Android
 go get -d ./...
+## Android
 gomobile bind -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
 gomobile bind -a -ldflags '-s -w' -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
 ## Windows
 go build -o build/tun2ray.exe
+
+# Update modules
+go get -u
