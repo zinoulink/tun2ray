@@ -90,7 +90,7 @@ func StopTun2Ray() {
 	isStopped = true
 	// Close tun Device
 	if tunDev != nil {
-
+		tunDev.Close()
 		if err != nil {
 			fmt.Println(err)
 		}
