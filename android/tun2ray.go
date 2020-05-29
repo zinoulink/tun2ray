@@ -3,7 +3,6 @@ package tun2ray
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -24,7 +23,7 @@ var isStopped = false
 
 // Start sets up lwIP stack, starts a V2Ray instance and registers the instance as the
 // connection handler for tun2socks.
-func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
+func Start(fd int, Config string, IsUDPEnabled bool, MTU int) {
 	// Change V2ray asset path to the current path
 	// to access geosite.dat & geoipdat
 	path, err := os.Getwd()
@@ -36,11 +35,8 @@ func Start(fd int, ConfigFile string, IsUDPEnabled bool, MTU int) {
 	// Share the buffer pool.
 	core.SetBufferPool(vbytespool.GetPool(core.BufSize))
 
-	// Read config file
-	configBytes, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		log.Fatalf("read config file failed: %v", err)
-	}
+	// Converte config to bytes.
+	configBytes := []byte(Config)
 
 	// Start the V2Ray instance.
 	v, err = vcore.StartInstance("json", configBytes)
