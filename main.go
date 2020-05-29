@@ -49,7 +49,7 @@ func main() {
 	args.TunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface address")
 	args.TunGw = flag.String("tunGw", "10.0.85.1", "TUN interface gateway")
 	args.TunMask = flag.String("tunMask", "255.255.255.0", "TUN interface netmask, it should be a prefixlen (a number) for IPv6 address")
-	args.TunDNS = flag.String("tunDns", "114.114.114.114,8.8.8.8", "DNS resolvers for TUN interface (only need on Windows)")
+	args.TunDNS = flag.String("tunDns", "114.114.114.114", "DNS resolvers for TUN interface (only need on Windows)")
 	args.Config = flag.String("config", "config.json", "Config file for v2ray, in JSON format, and note that routing in v2ray could not violate routes in the routing table")
 	args.SniffingType = flag.String("sniffingType", "http,tls", "Enable domain sniffing for specific kind of traffic in v2ray")
 	args.ExceptionApps = flag.String("exceptionApps", "tun2ray.exe", "Exception app list separated by commas")

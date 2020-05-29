@@ -24,3 +24,7 @@ android:
 
 clean:
 	rm -rf $(BUILDDIR)
+
+# HelloWorld
+windows: 
+	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o build/tun2ray.dll fipn.xyz/tun2ray/windows
