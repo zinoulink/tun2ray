@@ -3,13 +3,13 @@ package tun2ray
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
 
 	"fipn.xyz/tun2ray/dnsfallback"
 	"fipn.xyz/tun2ray/v2ray"
+
 	vcore "v2ray.com/core"
 	vproxyman "v2ray.com/core/app/proxyman"
 	vbytespool "v2ray.com/core/common/bytespool"
@@ -23,12 +23,13 @@ var isStopped = false
 
 // Start sets up lwIP stack, starts a V2Ray instance and registers the instance as the
 // connection handler for tun2socks.
-func Start(fd int, Config string, IsUDPEnabled bool, MTU int) {
+func Start(fd int, Config string, IsUDPEnabled bool, MTU int) string {
 	// Change V2ray asset path to the current path
 	// to access geosite.dat & geoipdat
+
 	path, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Sprintln(err.Error())
 	}
 	os.Setenv("v2ray.location.asset", path)
 
@@ -41,7 +42,7 @@ func Start(fd int, Config string, IsUDPEnabled bool, MTU int) {
 	// Start the V2Ray instance.
 	v, err = vcore.StartInstance("json", configBytes)
 	if err != nil {
-		log.Fatalf("start V instance failed: %v", err)
+		return fmt.Sprintln("start V instance failed: ", err.Error())
 	}
 
 	// Configure sniffing settings for traffic coming from tun2socks.
@@ -93,34 +94,36 @@ func Start(fd int, Config string, IsUDPEnabled bool, MTU int) {
 	for !isStopped {
 		len, err := tun.Read(buffer)
 		if err != nil {
-			log.Println("Failed to read packet from TUN: %v", err)
+			fmt.Println("Failed to read packet from TUN: ", err)
 			continue
 		}
 		if len == 0 {
-			log.Println("Read EOF from TUN")
+			fmt.Println("Read EOF from TUN")
 			continue
 		}
 		if lwipStack != nil {
 			lwipStack.Write(buffer)
 		}
 	}
+	return ""
 }
 
 // Stop V2Ray, close lwipStack
-func Stop() {
+func Stop() string {
 	isStopped = true
 	if lwipStack != nil {
 		err := lwipStack.Close()
 		if err != nil {
-			fmt.Println(err)
+			return fmt.Sprintln(err.Error())
 		}
 		lwipStack = nil
 	}
 	if v != nil {
 		err := v.Close()
 		if err != nil {
-			fmt.Println(err)
+			return fmt.Sprintln(err.Error())
 		}
 		v = nil
 	}
+	return ""
 }

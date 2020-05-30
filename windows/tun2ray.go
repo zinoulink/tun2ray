@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"strings"
@@ -34,8 +33,8 @@ var tunDev io.ReadWriteCloser
 var err error
 
 //export StartTun2Ray
-func StartTun2Ray(tunName *C.char, tunAddr *C.char, tunGw *C.char, tunMask *C.char,
-	tunDNS *C.char, config *C.char, exceptionApps *C.char, sendThrough *C.char, MTU int) {
+func StartTun2Ray(tunName *C.char, tunAddr *C.char, tunGw *C.char, tunMask *C.char, tunDNS *C.char,
+	config *C.char, exceptionApps *C.char, sendThrough *C.char, MTU int) *C.char {
 
 	// Coverte parameters to Go string
 	TunName := C.GoString(tunName)
@@ -53,13 +52,16 @@ func StartTun2Ray(tunName *C.char, tunAddr *C.char, tunGw *C.char, tunMask *C.ch
 	dnsServers := strings.Split(TunDNS, ",")
 	tunDev, err = tun.OpenTunDevice(TunName, TunAddr, TunGw, TunMask, dnsServers, false)
 	if err != nil {
-		log.Fatalf("failed to open tun device: %v", err)
+		return cPrintln("failed to open tun device: " + err.Error())
 	}
 
 	// Setup TCP/IP stack.
 	lwipWriter := core.NewLWIPStack().(io.Writer)
 
-	startV2Ray(Config, SniffingType, ExceptionApps, SendThrough, UDPTimeout)
+	str := startV2Ray(Config, SniffingType, ExceptionApps, SendThrough, UDPTimeout)
+	if str != "" {
+		return C.CString(str)
+	}
 
 	isStopped = false
 
@@ -77,22 +79,23 @@ func StartTun2Ray(tunName *C.char, tunAddr *C.char, tunGw *C.char, tunMask *C.ch
 	go func() {
 		_, err := io.CopyBuffer(lwipWriter, tunDev, make([]byte, MTU))
 		if err != nil {
-			log.Println("copying data failed: %v", err)
+			fmt.Println("copying data failed: %v", err)
 			return
 		}
 	}()
 
-	log.Println("Running tun2ray")
+	fmt.Println("Running tun2ray")
+	return C.CString("")
 }
 
 //export StopTun2Ray
-func StopTun2Ray() {
+func StopTun2Ray() *C.char {
 	isStopped = true
 	// Close tun Device
 	if tunDev != nil {
 		tunDev.Close()
 		if err != nil {
-			fmt.Println(err)
+			return cPrintln(err.Error())
 		}
 		tunDev = nil
 	}
@@ -100,7 +103,7 @@ func StopTun2Ray() {
 	if lwipStack != nil {
 		err := lwipStack.Close()
 		if err != nil {
-			fmt.Println(err)
+			return cPrintln(err.Error())
 		}
 		lwipStack = nil
 	}
@@ -108,20 +111,21 @@ func StopTun2Ray() {
 	if v != nil {
 		err := v.Close()
 		if err != nil {
-			fmt.Println(err)
+			return cPrintln(err.Error())
 		}
 		v = nil
 	}
 	fmt.Println("Stoped")
+	return C.CString("")
 }
 func startV2Ray(config string, sniffingType string, exceptionApps string,
-	exceptionSendThrough string, UDPTimeout time.Duration) {
+	exceptionSendThrough string, UDPTimeout time.Duration) string {
 
 	// Change V2ray asset path to the current path
 	// to access geosite.dat & geoipdat
 	path, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Sprintln(err.Error())
 	}
 	os.Setenv("v2ray.location.asset", path)
 
@@ -134,7 +138,7 @@ func startV2Ray(config string, sniffingType string, exceptionApps string,
 	// Start the V2Ray instance.
 	v, err = vcore.StartInstance("json", configBytes)
 	if err != nil {
-		log.Fatalf("start V instance failed: %v", err)
+		return fmt.Sprintln("start V instance failed " + err.Error())
 	}
 
 	// Configure sniffing settings for traffic coming from tun2socks.
@@ -161,7 +165,7 @@ func startV2Ray(config string, sniffingType string, exceptionApps string,
 	// Resolve the gateway address.
 	sendThrough, err := net.ResolveTCPAddr("tcp", exceptionSendThrough)
 	if err != nil {
-		log.Fatalf("invalid exception send through address: %v", err)
+		return fmt.Sprintln("invalid exception send through address: " + err.Error())
 	}
 	// Prepare the apps list.
 	apps := strings.Split(exceptionApps, ",")
@@ -173,4 +177,11 @@ func startV2Ray(config string, sniffingType string, exceptionApps string,
 	// Register tun2socks connection handlers.
 	core.RegisterTCPConnHandler(tcpHandler)
 	core.RegisterUDPConnHandler(udpHandler)
+	return ""
+}
+
+//CPrintln print string and return its length
+func cPrintln(msg string) *C.char {
+
+	return C.CString(fmt.Sprintln(msg))
 }

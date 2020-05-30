@@ -45,15 +45,15 @@ var args = new(cmdArgs)
 var lwipWriter io.Writer
 
 func main() {
-	args.TunName = flag.String("tunName", "mellow-tap0", "TUN interface name")
-	args.TunAddr = flag.String("tunAddr", "10.0.85.2", "TUN interface address")
-	args.TunGw = flag.String("tunGw", "10.0.85.1", "TUN interface gateway")
+	args.TunName = flag.String("tunName", "Local Area Connection", "TUN interface name")
+	args.TunAddr = flag.String("tunAddr", "10.0.89.2", "TUN interface address")
+	args.TunGw = flag.String("tunGw", "10.0.89.1", "TUN interface gateway")
 	args.TunMask = flag.String("tunMask", "255.255.255.0", "TUN interface netmask, it should be a prefixlen (a number) for IPv6 address")
 	args.TunDNS = flag.String("tunDns", "114.114.114.114", "DNS resolvers for TUN interface (only need on Windows)")
 	args.Config = flag.String("config", "config.json", "Config file for v2ray, in JSON format, and note that routing in v2ray could not violate routes in the routing table")
 	args.SniffingType = flag.String("sniffingType", "http,tls", "Enable domain sniffing for specific kind of traffic in v2ray")
 	args.ExceptionApps = flag.String("exceptionApps", "tun2ray.exe", "Exception app list separated by commas")
-	args.ExceptionSendThrough = flag.String("sendThrough", "192.168.0.101:0", "Exception send through address")
+	args.ExceptionSendThrough = flag.String("sendThrough", "192.168.1.3:0", "Exception send through address")
 
 	flag.Parse()
 
