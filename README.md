@@ -10,16 +10,20 @@ netsh interface ip delete route 0.0.0.0/0 mellow-tap0
 
 # Build
 go get -d ./...
+
 ## Android
-gomobile bind -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
-gomobile bind -a -ldflags '-s -w' -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
+env GONOSUMDB="github.com/v2ray/v2ray-core" gomobile bind -v -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
+env GONOSUMDB="github.com/v2ray/v2ray-core" gomobile bind -v -a -ldflags '-s -w' -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
+
 ## Windows
-env GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -ldflags -o build/tun2ray.exe
+env GONOSUMDB="github.com/v2ray/v2ray-core" GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o build/tun2ray.exe
+
 tun2ray.dll should be compiled in 32 bit because GTK# is available  only in 32 bit
 libgcc_s_dw2-1.dll & libwinpthread-1.dll should be included with tun2ray.dll
 pacman -S mingw-w64-i686-gcc
 change path to mingw32
-env GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -o build/tun2ray.dll -buildmode=c-shared fipn.xyz/tun2ray/windows
+
+env GONOSUMDB="github.com/v2ray/v2ray-core" GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o build/tun2ray.dll -buildmode=c-shared fipn.xyz/tun2ray/windows
 
 # Update modules
 go get -u
