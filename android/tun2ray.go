@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 	"time"
-
+	"io"
 	"fipn.xyz/tun2ray/dnsfallback"
 	"fipn.xyz/tun2ray/v2ray"
 
@@ -24,9 +24,9 @@ var isStopped = false
 // Start sets up lwIP stack, starts a V2Ray instance and registers the instance as the
 // connection handler for tun2socks.
 func Start(fd int, Config string, IsUDPEnabled bool, MTU int) string {
+	
 	// Change V2ray asset path to the current path
 	// to access geosite.dat & geoipdat
-
 	path, err := os.Getwd()
 	if err != nil {
 		return fmt.Sprintln(err.Error())
@@ -66,6 +66,10 @@ func Start(fd int, Config string, IsUDPEnabled bool, MTU int) string {
 	tun := os.NewFile(uintptr(fd), "")
 	// Write IP packets back to TUN.
 	core.RegisterOutputFn(func(data []byte) (int, error) {
+		if isStopped {
+			fmt.Println("tunDev is Closed")
+			return 0, nil
+		}
 		return tun.Write(data)
 	})
 
@@ -90,21 +94,16 @@ func Start(fd int, Config string, IsUDPEnabled bool, MTU int) string {
 
 	// ProcessInputPackets reads packets from a TUN device `tun` and writes them to `lwipStack`
 	// It's the main loop
-	buffer := make([]byte, MTU)
-	for !isStopped {
-		len, err := tun.Read(buffer)
+	buf := make([]byte, MTU)
+	go func() {
+		_, err := io.CopyBuffer(lwipStack, tun, buf)
 		if err != nil {
-			fmt.Println("Failed to read packet from TUN: ", err)
-			continue
+			fmt.Println("copying data failed: %v", err)
+			return
 		}
-		if len == 0 {
-			fmt.Println("Read EOF from TUN")
-			continue
-		}
-		if lwipStack != nil {
-			lwipStack.Write(buffer)
-		}
-	}
+	}()
+
+	fmt.Println("Running tun2ray")
 	return ""
 }
 

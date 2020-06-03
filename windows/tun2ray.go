@@ -76,8 +76,9 @@ func StartTun2Ray(tunName *C.char, tunAddr *C.char, tunGw *C.char, tunMask *C.ch
 	})
 
 	// Copy packets from tun device to lwip stack, it's the main loop.
+	buf := make([]byte, MTU)
 	go func() {
-		_, err := io.CopyBuffer(lwipWriter, tunDev, make([]byte, MTU))
+		_, err := io.CopyBuffer(lwipWriter, tunDev, buf)
 		if err != nil {
 			fmt.Println("copying data failed: %v", err)
 			return
@@ -118,6 +119,7 @@ func StopTun2Ray() *C.char {
 	fmt.Println("Stoped")
 	return C.CString("")
 }
+
 func startV2Ray(config string, sniffingType string, exceptionApps string,
 	exceptionSendThrough string, UDPTimeout time.Duration) string {
 
