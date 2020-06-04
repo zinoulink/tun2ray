@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"fipn.xyz/tun2ray/lsof"
 	"github.com/eycorsican/go-tun2socks/common/log"
 	"github.com/eycorsican/go-tun2socks/core"
+	"github.com/zinoulink/tun2ray/lsof"
 )
 
 type udpHandler struct {

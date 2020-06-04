@@ -6,8 +6,8 @@ ANDROID_ARTIFACT=$(BUILDDIR)/tun2ray.aar
 IOS_TARGET=ios
 ANDROID_TARGET=android
 LDFLAGS='-s -w'
-IMPORT_PATH_IOS=fipn.xyz/tun2ray/ios
-IMPORT_PATH_ANDROID=fipn.xyz/tun2ray/android
+IMPORT_PATH_IOS=github.com/zinoulink/tun2ray/ios
+IMPORT_PATH_ANDROID=github.com/zinoulink/tun2ray/android
 
 BUILD_IOS="cd $(BUILDDIR) && $(GOBIND) -a -ldflags $(LDFLAGS) -target=$(IOS_TARGET) -o $(IOS_ARTIFACT) $(IMPORT_PATH_IOS)"
 BUILD_ANDROID="cd $(BUILDDIR) && $(GOBIND) -a -ldflags $(LDFLAGS) -target=$(ANDROID_TARGET) -o $(ANDROID_ARTIFACT) $(IMPORT_PATH_ANDROID)"
@@ -27,4 +27,4 @@ clean:
 
 # HelloWorld
 windows: 
-	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o build/tun2ray.dll fipn.xyz/tun2ray/windows
+	env GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -i -v -buildmode=c-shared -o build/tun2ray.dll github.com/zinoulink/tun2ray/windows

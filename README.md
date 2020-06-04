@@ -12,10 +12,10 @@ netsh interface ip delete route 0.0.0.0/0 mellow-tap0
 go get -d ./...
 
 ## Android
-env GONOSUMDB="github.com/v2fly/v2ray-core" gomobile bind -v -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
-env GONOSUMDB="github.com/v2fly/v2ray-core" gomobile bind -v -a -ldflags '-s -w' -target=android -o build/tun2ray.aar fipn.xyz/tun2ray/android
+env GONOSUMDB="github.com/v2fly/v2ray-core" gomobile bind -v -target=android -o build/tun2ray.aar github.com/zinoulink/tun2ray/android
+env GONOSUMDB="github.com/v2fly/v2ray-core" gomobile bind -v -a -ldflags '-s -w' -target=android -o build/tun2ray.aar github.com/zinoulink/tun2ray/android
 
-env GONOSUMDB="github.com/v2fly/v2ray-core" gomobile bind -v -target=android -o /c/Users/zinou/Desktop/FiPN/FiPN.Android/tun2ray.aar fipn.xyz/tun2ray/android
+env GONOSUMDB="github.com/v2fly/v2ray-core" gomobile bind -v -target=android -o /c/Users/zinou/Desktop/FiPN/Tun2Ray.Android/Jars/tun2ray.aar github.com/zinoulink/tun2ray/android
 
 
 ## Windows
@@ -26,9 +26,9 @@ libgcc_s_dw2-1.dll & libwinpthread-1.dll should be included with tun2ray.dll
 pacman -S mingw-w64-i686-gcc
 change path to mingw32
 
-env GONOSUMDB="github.com/v2fly/v2ray-core" GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o build/tun2ray.dll -buildmode=c-shared fipn.xyz/tun2ray/windows
+env GONOSUMDB="github.com/v2fly/v2ray-core" GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o build/tun2ray.dll -buildmode=c-shared github.com/zinoulink/tun2ray/windows
 
-env GONOSUMDB="github.com/v2fly/v2ray-core" GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o /c/Users/zinou/Desktop/FiPN/FiPN.Windows/tun2ray.dll -buildmode=c-shared fipn.xyz/tun2ray/windows
+env GONOSUMDB="github.com/v2fly/v2ray-core" GOOS=windows GOARCH=386 CGO_ENABLED=1 go build -v -o /c/Users/zinou/Desktop/FiPN/FiPN.Windows/tun2ray.dll -buildmode=c-shared github.com/zinoulink/tun2ray/windows
 
 
 

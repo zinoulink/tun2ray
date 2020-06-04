@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	win "fipn.xyz/tun2ray/lsof/windows"
+	win "github.com/zinoulink/tun2ray/lsof/windows"
 )
 
 func GetCommandNameBySocket(network string, addr string, port uint16) (string, error) {

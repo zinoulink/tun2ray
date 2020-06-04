@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"fipn.xyz/tun2ray/d"
-	"fipn.xyz/tun2ray/v2ray"
+	"github.com/zinoulink/tun2ray/d"
+	"github.com/zinoulink/tun2ray/v2ray"
 	vcore "v2ray.com/core"
 	vproxyman "v2ray.com/core/app/proxyman"
 	vbytespool "v2ray.com/core/common/bytespool"

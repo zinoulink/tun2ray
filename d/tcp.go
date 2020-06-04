@@ -5,9 +5,9 @@ import (
 	"net"
 	"strconv"
 
-	"fipn.xyz/tun2ray/lsof"
 	"github.com/eycorsican/go-tun2socks/common/log"
 	"github.com/eycorsican/go-tun2socks/core"
+	"github.com/zinoulink/tun2ray/lsof"
 )
 
 // This handler allows you chain another proxy behind tun2socks locally, typically a rule-based proxy client, e.g. V2Ray.

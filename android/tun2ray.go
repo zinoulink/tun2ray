@@ -3,12 +3,13 @@ package tun2ray
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
-	"io"
-	"fipn.xyz/tun2ray/dnsfallback"
-	"fipn.xyz/tun2ray/v2ray"
+
+	"github.com/zinoulink/tun2ray/dnsfallback"
+	"github.com/zinoulink/tun2ray/v2ray"
 
 	vcore "v2ray.com/core"
 	vproxyman "v2ray.com/core/app/proxyman"

@@ -1,4 +1,4 @@
-module fipn.xyz/tun2ray
+module github.com/zinoulink/tun2ray
 
 require (
 	github.com/eycorsican/go-tun2socks v1.16.9
