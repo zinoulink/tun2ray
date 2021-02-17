@@ -18,6 +18,7 @@ import (
 	vcore "v2ray.com/core"
 	vproxyman "v2ray.com/core/app/proxyman"
 	vbytespool "v2ray.com/core/common/bytespool"
+	"v2ray.com/core/common/session"
 
 	"github.com/eycorsican/go-tun2socks/core"
 	"github.com/eycorsican/go-tun2socks/tun"
@@ -125,7 +126,7 @@ func startV2Ray(configFile string, sniffingType string, exceptionApps string, ex
 	if len(validSniffings) == 0 {
 		sniffingConfig.Enabled = false
 	}
-	ctx := vproxyman.ContextWithSniffingConfig(context.Background(), sniffingConfig)
+	ctx := ContextWithSniffingConfig(context.Background(), sniffingConfig)
 
 	// Create v2ray handlers.
 	v2rayTCPConnHandler := v2ray.NewTCPHandler(ctx, v)
@@ -146,4 +147,17 @@ func startV2Ray(configFile string, sniffingType string, exceptionApps string, ex
 	// Register tun2socks connection handlers.
 	core.RegisterTCPConnHandler(tcpHandler)
 	core.RegisterUDPConnHandler(udpHandler)
+}
+
+// ContextWithSniffingConfig is a wrapper of session.ContextWithContent.
+// Deprecated. Use session.ContextWithContent directly.
+func ContextWithSniffingConfig(ctx context.Context, c *vproxyman.SniffingConfig) context.Context {
+	content := session.ContentFromContext(ctx)
+	if content == nil {
+		content = new(session.Content)
+		ctx = session.ContextWithContent(ctx, content)
+	}
+	content.SniffingRequest.Enabled = c.Enabled
+	content.SniffingRequest.OverrideDestinationForProtocol = c.DestinationOverride
+	return ctx
 }

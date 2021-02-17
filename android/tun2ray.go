@@ -14,6 +14,7 @@ import (
 	vcore "v2ray.com/core"
 	vproxyman "v2ray.com/core/app/proxyman"
 	vbytespool "v2ray.com/core/common/bytespool"
+	"v2ray.com/core/common/session"
 
 	"github.com/eycorsican/go-tun2socks/core"
 )
@@ -25,7 +26,7 @@ var isStopped = false
 // Start sets up lwIP stack, starts a V2Ray instance and registers the instance as the
 // connection handler for tun2socks.
 func Start(fd int, Config string, IsUDPEnabled bool, MTU int) string {
-	
+
 	// Change V2ray asset path to the current path
 	// to access geosite.dat & geoipdat
 	path, err := os.Getwd()
@@ -61,7 +62,7 @@ func Start(fd int, Config string, IsUDPEnabled bool, MTU int) string {
 	if len(validSniffings) == 0 {
 		sniffingConfig.Enabled = false
 	}
-	ctx := vproxyman.ContextWithSniffingConfig(context.Background(), sniffingConfig)
+	ctx := ContextWithSniffingConfig(context.Background(), sniffingConfig)
 
 	// MakeTunFile returns an os.File object from a TUN file descriptor `fd`.
 	tun := os.NewFile(uintptr(fd), "")
@@ -126,4 +127,17 @@ func Stop() string {
 		v = nil
 	}
 	return ""
+}
+
+// ContextWithSniffingConfig is a wrapper of session.ContextWithContent.
+// Deprecated. Use session.ContextWithContent directly.
+func ContextWithSniffingConfig(ctx context.Context, c *vproxyman.SniffingConfig) context.Context {
+	content := session.ContentFromContext(ctx)
+	if content == nil {
+		content = new(session.Content)
+		ctx = session.ContextWithContent(ctx, content)
+	}
+	content.SniffingRequest.Enabled = c.Enabled
+	content.SniffingRequest.OverrideDestinationForProtocol = c.DestinationOverride
+	return ctx
 }
